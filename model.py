@@ -16,11 +16,11 @@ def short_conv(x, w):
     Positions before the sequence start count as zeros.
     """
     # TODO: accumulate each kernel tap with a shifted slice add
-    x = torch.as_tensor(x, dtype=torch.float32)
-    w = torch.as_tensor(w, dtype=torch.float32)
+    x = torch.as_tensor(x)
+    w = torch.as_tensor(w, dtype=x.dtype)
 
     T, d = x.shape
-    K, d2 = w.shape
+    K, _ = w.shape
 
     y = torch.zeros_like(x)
 
@@ -32,8 +32,38 @@ def short_conv(x, w):
 
     return y
 
-# Step 2 - kda_qkv (not yet solved)
-# TODO: implement
+# Step 2 - kda_qkv
+def kda_qkv(x, params):
+    """KDA projections: q,k = L2Norm(Swish(ShortConv(W x))), v = Swish(ShortConv(Wv x)).
+
+    params: dict with Wq (d,dk), Wk (d,dk), Wv (d,dv), cq (K,dk), ck (K,dk), cv (K,dv).
+    Returns (q, k, v).  L2Norm divides each row by sqrt(sum(row**2) + 1e-6).
+    """
+    # TODO: project -> short_conv -> swish, then L2-normalize q and k rows
+    x = torch.as_tensor(x)
+
+    Wq = torch.as_tensor(params["Wq"], dtype=x.dtype)
+    Wk = torch.as_tensor(params["Wk"], dtype=x.dtype)
+    Wv = torch.as_tensor(params["Wv"], dtype=x.dtype)
+
+    cq = torch.as_tensor(params["cq"], dtype=x.dtype)
+    ck = torch.as_tensor(params["ck"], dtype=x.dtype)
+    cv = torch.as_tensor(params["cv"], dtype=x.dtype)
+
+    q = short_conv(x @ Wq, cq)
+    k = short_conv(x @ Wk, ck)
+    v = short_conv(x @ Wv, cv)
+
+    # Swish
+    q = q * torch.sigmoid(q)
+    k = k * torch.sigmoid(k)
+    v = v * torch.sigmoid(v)
+
+    # L2 normalization
+    q = q / torch.sqrt((q * q).sum(dim=-1, keepdim=True) + 1e-6)
+    k = k / torch.sqrt((k * k).sum(dim=-1, keepdim=True) + 1e-6)
+
+    return q.numpy(), k.numpy(), v.numpy()
 
 # Step 3 - kda_gates (not yet solved)
 # TODO: implement

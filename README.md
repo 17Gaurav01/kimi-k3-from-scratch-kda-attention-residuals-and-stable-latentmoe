@@ -11,7 +11,7 @@ python scaffold.py
 ## Steps
 
 - [x] **1.** short_conv
-- [ ] **2.** kda_qkv
+- [x] **2.** kda_qkv
 - [ ] **3.** kda_gates
 - [ ] **4.** lower_bounded_decay
 - [ ] **5.** kda_state_update
