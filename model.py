@@ -65,8 +65,27 @@ def kda_qkv(x, params):
 
     return q.numpy(), k.numpy(), v.numpy()
 
-# Step 3 - kda_gates (not yet solved)
-# TODO: implement
+# Step 3 - kda_gates
+import numpy as np
+def kda_gates(x, params):
+    """Return (beta, z): write strength sigmoid(x@wb+bb), decay logits x@Wd1@Wd2+ba.
+
+    params: wb (d,), bb scalar, Wd1 (d,r), Wd2 (r,dk), ba (dk,).
+    beta: (T,) in (0,1).  z: (T, dk), unbounded.
+    """
+    # TODO
+    px = np.asarray(x)
+
+    wb = np.asarray(params["wb"])
+    bb = params["bb"]
+    Wd1 = np.asarray(params["Wd1"])
+    Wd2 = np.asarray(params["Wd2"])
+    ba = np.asarray(params["ba"])
+
+    beta = 1 / (1 + np.exp(-(x @ wb + bb)))
+    z = x @ Wd1 @ Wd2 + ba
+
+    return beta, z
 
 # Step 4 - lower_bounded_decay (not yet solved)
 # TODO: implement
